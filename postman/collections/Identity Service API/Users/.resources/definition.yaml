@@ -1,0 +1,3 @@
+$kind: collection
+description: Endpoints for managing user identities
+order: 1000

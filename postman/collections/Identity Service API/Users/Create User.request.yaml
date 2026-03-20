@@ -1,0 +1,101 @@
+$kind: http-request
+description: >-
+  Creates a new user with the provided name and email.
+
+
+  If a user with the same email already exists, returns the existing user with a
+  200 status and an `existing: true` flag.
+
+
+  **Request Body:**
+
+  - `name` (string, required): The user's name
+
+  - `email` (string, required): The user's email address
+
+
+  **Responses:**
+
+  - 201: `{ user: { id, name, email } }` user created successfully
+
+  - 200: `{ user: { id, name, email }, existing: true }` user already exists
+  with this email
+
+  - 400: `{ error: "name and email are required" }` missing required fields
+url: "{{baseUrl}}/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    }
+scripts:
+  - type: afterResponse
+    code: >-
+      // Test: Status code is 201 or 200 (existing user)
+
+      pm.test("Status code is 201 or 200", function() {
+          pm.expect([200, 201]).to.include(pm.response.code);
+      });
+
+
+      // Test: Response time is less than 500ms
+
+      pm.test("Response time is less than 500ms", function() {
+          pm.expect(pm.response.responseTime).to.be.below(500);
+      });
+
+
+      // Test: Response has JSON body
+
+      pm.test("Response has JSON body", function() {
+          pm.response.to.be.json;
+      });
+
+
+      // Parse response body
+
+      var jsonData = pm.response.json();
+
+
+      // Test: Response contains user with id, name, email fields
+
+      pm.test("Response contains user with id, name, email fields", function() {
+          pm.expect(jsonData).to.have.property('user');
+          pm.expect(jsonData.user).to.have.property('id');
+          pm.expect(jsonData.user).to.have.property('name');
+          pm.expect(jsonData.user).to.have.property('email');
+      });
+
+
+      // Parse request body to compare
+
+      var requestBody = JSON.parse(pm.request.body.raw);
+
+
+      // Test: Email matches the request email
+
+      pm.test("Email matches the request email", function() {
+          pm.expect(jsonData.user.email).to.equal(requestBody.email);
+      });
+
+
+      // Test: Name matches the request name
+
+      pm.test("Name matches the request name", function() {
+          pm.expect(jsonData.user.name).to.equal(requestBody.name);
+      });
+
+
+      // Set user ID to collection variable for use in other requests
+
+      if (jsonData.user && jsonData.user.id) {
+          pm.collectionVariables.set("userId", jsonData.user.id);
+          console.log("User ID saved to collection variable: " + jsonData.user.id);
+      }
+    language: text/javascript
+order: 1000

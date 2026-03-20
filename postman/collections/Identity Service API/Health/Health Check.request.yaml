@@ -1,0 +1,35 @@
+$kind: http-request
+description: |-
+  Returns the health status of the Identity Service.
+
+  **Responses:**
+  - 200: `{ status: "ok", service: "identity-api" }`
+url: "{{baseUrl}}/health"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      // Test: Status code is 200
+      pm.test("Status code is 200", function() {
+          pm.response.to.have.status(200);
+      });
+
+      // Test: Response time is less than 500ms
+      pm.test("Response time is less than 500ms", function() {
+          pm.expect(pm.response.responseTime).to.be.below(500);
+      });
+
+      // Parse response body
+      var jsonData = pm.response.json();
+
+      // Test: Response has status property
+      pm.test("Response has status property", function() {
+          pm.expect(jsonData).to.have.property('status');
+      });
+
+      // Test: Status is 'ok'
+      pm.test("Status is 'ok'", function() {
+          pm.expect(jsonData.status).to.equal('ok');
+      });
+    language: text/javascript
+order: 1000

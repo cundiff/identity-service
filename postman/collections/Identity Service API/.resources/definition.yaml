@@ -1,0 +1,26 @@
+$kind: collection
+description: >-
+  API collection for the Identity Service - a demo service for managing user
+  identities.
+
+
+  This service provides endpoints for:
+
+  - Creating and retrieving users
+
+  - Health check monitoring
+
+
+  Base URL: The service runs on port 3001 by default.
+variables:
+  baseUrl: http://localhost:3001
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      // Collection-level pre-request script
+      console.log('========================================');
+      console.log('Request: ' + pm.info.requestName);
+      console.log('Method: ' + pm.request.method);
+      console.log('URL: ' + pm.request.url.toString());
+      console.log('========================================');
+    language: text/javascript

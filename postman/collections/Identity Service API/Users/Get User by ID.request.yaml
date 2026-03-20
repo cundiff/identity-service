@@ -1,0 +1,46 @@
+$kind: http-request
+description: |-
+  Retrieves a specific user by their ID.
+
+  **Path Parameters:**
+  - `id` (string, required): The user's unique identifier
+
+  **Responses:**
+  - 200: `{ user: { id, name, email } }` user found and returned
+  - 404: `{ error: "user not found" }`
+url: "{{baseUrl}}/users/:id"
+method: GET
+pathVariables:
+  - key: id
+    value: u1
+    description: User ID (e.g., u1, u2, u3)
+scripts:
+  - type: afterResponse
+    code: |-
+      // Test: Status code is 200
+      pm.test("Status code is 200", function() {
+          pm.response.to.have.status(200);
+      });
+
+      // Test: Response time is less than 500ms
+      pm.test("Response time is less than 500ms", function() {
+          pm.expect(pm.response.responseTime).to.be.below(500);
+      });
+
+      // Test: Response has JSON body
+      pm.test("Response has JSON body", function() {
+          pm.response.to.be.json;
+      });
+
+      // Parse response body
+      var jsonData = pm.response.json();
+
+      // Test: Response contains user with id, name, email fields
+      pm.test("Response contains user with id, name, email fields", function() {
+          pm.expect(jsonData).to.have.property('user');
+          pm.expect(jsonData.user).to.have.property('id');
+          pm.expect(jsonData.user).to.have.property('name');
+          pm.expect(jsonData.user).to.have.property('email');
+      });
+    language: text/javascript
+order: 3000
